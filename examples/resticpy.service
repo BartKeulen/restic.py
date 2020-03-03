@@ -1,0 +1,7 @@
+[Unit]
+Description=Run restic.py
+After=plexdrive.service
+
+[Service]
+Type=simple
+ExecStart=restic.py
