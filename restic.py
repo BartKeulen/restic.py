@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import time
 import argparse
 import importlib.util
 import os
@@ -20,6 +21,8 @@ def backup(config):
             )
             continue
 
+        start = time.time()
+        logging.info("backing up {}".format(path))
         args = ["restic", "-r", config.repository, "backup", "--json", path]
         if hasattr(config, "backup_args"):
             args += config.backup_args
@@ -38,12 +41,14 @@ def backup(config):
             line = json.loads(line)
             if "message_type" in line and line["message_type"] == "summary":
                 summary = line
-                logging.info("successfully backed up {}:\n  {}".format(path, summary))
+                end = time.time()
+                logging.info("successfully backed up {} in: {:.2} seconds".format(path, end - start))
 
     logging.info("backup finished")
 
 
 def prune(config):
+    start = time.time()
     logging.info("start prune")
     args = ["restic", "-r", config.repository, "forget", "--prune", "--json"]
     if hasattr(config, "prune_args"):
@@ -56,10 +61,12 @@ def prune(config):
         logging.error("pruning failed:\n  {}".format(p.stderr))
         return
 
-    logging.info("prune finished")
+    end = time.time()
+    logging.info("prune finished in {:.2} seconds".format(end - start))
 
 
 def check(config):
+    start = time.time()
     logging.info("start check")
     args = ["restic", "-r", config.repository, "check", "--json"]
     if hasattr(config, "check_args"):
@@ -72,7 +79,8 @@ def check(config):
         logging.error("checking failed:\n  {}".format(p.stderr))
         return
 
-    logging.info("check finished")
+    end = time.time()
+    logging.info("check finished in {:.2} seconds".format(end - start))
 
 
 if __name__ == "__main__":
